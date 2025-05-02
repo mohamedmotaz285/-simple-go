@@ -1,7 +1,5 @@
 pipeline {
-    agent {
-        docker { image 'golang:1.22' }
-    }
+    agent any
 
     environment {
         IMAGE_NAME = "mohamedmotaz350/simple-go"
@@ -16,7 +14,12 @@ pipeline {
 
         stage('Run Unit Tests') {
             steps {
-                sh 'go test ./...'
+                script {
+                    if (!fileExists('go.mod')) {
+                        error 'go.mod file is missing. Ensure Go modules are initialized.'
+                    }
+                    sh 'go test ./...'
+                }
             }
         }
 
