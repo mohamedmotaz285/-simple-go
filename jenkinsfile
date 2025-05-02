@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 pipeline {
     agent any
 
@@ -44,3 +45,51 @@ pipeline {
         }
     }
 }
+=======
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "mohamedmotaz350/simple-go"
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                git 'https://github.com/mohamedmotaz285/-simple-go.git'
+            }
+        }
+
+        stage('Run Unit Tests') {
+            steps {
+                sh 'go test ./...'
+            }
+        }
+
+        stage('Build and Push Docker Image') {
+            steps {
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKERUSER', passwordVariable: 'DOCKERPASS')]) {
+                    sh """
+                    docker build -t mohamedmotaz350/simple-go .
+                    docker login -u $DOCKERUSER -p $DOCKERPASS
+                    docker push mohamedmotaz350/simple-go
+                    """
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'mohamedmotaz221@gmail.com',
+                 subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "The Jenkins pipeline has completed successfully. Check it here: ${env.BUILD_URL}"
+        }
+        failure {
+            mail to: 'mohamedmotaz221@gmail.com',
+                 subject: "Jenkins Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "The Jenkins pipeline has failed. Check it here: ${env.BUILD_URL}"
+        }
+    }
+}
+>>>>>>> 4faf995 (WIP: save local changes before rebase)
