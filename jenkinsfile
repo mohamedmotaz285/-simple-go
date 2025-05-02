@@ -1,0 +1,58 @@
+pipeline {
+    agent any
+
+    environment {
+        IMAGE_NAME = "mohamedmotaz350/simple-go"
+    }
+
+    stages {
+        stage('Checkout') {
+            steps {
+                git 'https://github.com/mohamedmotaz285/-simple-go.git'
+            }
+        }
+
+        stage('Build') {
+            steps {
+                sh 'go build -o app .'
+            }
+        }
+
+        stage('Test') {
+            steps {
+                sh 'go test ./...'
+            }
+        }
+
+        stage('Docker Build') {
+            steps {
+                script {
+                    docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
+                }
+            }
+        }
+
+        stage('Docker Push (اختياري لو عايز تدفع الصورة)') {
+            steps {
+                withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
+                    script {
+                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").push()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            mail to: 'mohamedmotaz221@gmail.com',
+                 subject: "SUCCESS: Jenkins Build #${BUILD_NUMBER}",
+                 body: "Good job! Build #${BUILD_NUMBER} passed successfully."
+        }
+        failure {
+            mail to: 'mohamedmotaz221@gmail.com',
+                 subject: "FAILURE: Jenkins Build #${BUILD_NUMBER}",
+                 body: "Uh oh! Build #${BUILD_NUMBER} failed."
+        }
+    }
+}
