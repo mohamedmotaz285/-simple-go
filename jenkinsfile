@@ -6,38 +6,26 @@ pipeline {
     }
 
     stages {
-        stage('Checkout') {
+        stage('Checkout Code') {
             steps {
                 git 'https://github.com/mohamedmotaz285/-simple-go.git'
             }
         }
 
-        stage('Build') {
-            steps {
-                sh 'go build -o app .'
-            }
-        }
-
-        stage('Test') {
+        stage('Run Unit Tests') {
             steps {
                 sh 'go test ./...'
             }
         }
 
-        stage('Docker Build') {
+        stage('Build and Push Docker Image') {
             steps {
-                script {
-                    docker.build("${IMAGE_NAME}:${BUILD_NUMBER}")
-                }
-            }
-        }
-
-        stage('Docker Push (اختياري لو عايز تدفع الصورة)') {
-            steps {
-                withDockerRegistry([credentialsId: 'dockerhub-creds', url: '']) {
-                    script {
-                        docker.image("${IMAGE_NAME}:${BUILD_NUMBER}").push()
-                    }
+                withCredentials([usernamePassword(credentialsId: 'docker', usernameVariable: 'DOCKERUSER', passwordVariable: 'DOCKERPASS')]) {
+                    sh """
+                    docker build -t mohamedmotaz350/simple-go .
+                    docker login -u $DOCKERUSER -p $DOCKERPASS
+                    docker push mohamedmotaz350/simple-go
+                    """
                 }
             }
         }
@@ -46,13 +34,13 @@ pipeline {
     post {
         success {
             mail to: 'mohamedmotaz221@gmail.com',
-                 subject: "SUCCESS: Jenkins Build #${BUILD_NUMBER}",
-                 body: "Good job! Build #${BUILD_NUMBER} passed successfully."
+                 subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "The Jenkins pipeline has completed successfully. Check it here: ${env.BUILD_URL}"
         }
         failure {
             mail to: 'mohamedmotaz221@gmail.com',
-                 subject: "FAILURE: Jenkins Build #${BUILD_NUMBER}",
-                 body: "Uh oh! Build #${BUILD_NUMBER} failed."
+                 subject: "Jenkins Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                 body: "The Jenkins pipeline has failed. Check it here: ${env.BUILD_URL}"
         }
     }
 }
