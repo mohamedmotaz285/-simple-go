@@ -3,21 +3,40 @@ pipeline {
 
     environment {
         IMAGE_NAME = "mohamedmotaz350/simple-go"
+        GO_PATH = "/usr/local/go/bin"
     }
 
     stages {
+        stage('Install Go') {
+            steps {
+                script {
+                    // تثبيت Go إذا كان غير موجود
+                    sh 'if ! command -v go &> /dev/null; then sudo apt-get update && sudo apt-get install -y golang-go; fi'
+                }
+            }
+        }
+
         stage('Checkout Code') {
             steps {
                 git branch: 'main', url: 'https://github.com/mohamedmotaz285/-simple-go.git'
             }
         }
 
+        stage('Set Go Path') {
+            steps {
+                script {
+                    // تأكد من أن Go موجود في PATH
+                    sh 'export PATH=$PATH:/usr/local/go/bin'
+                }
+            }
+        }
+
         stage('Run Unit Tests') {
             steps {
                 script {
-                    if (!fileExists('go.mod')) {
-                        error 'go.mod file is missing. Ensure Go modules are initialized.'
-                    }
+                    // قم بتثبيت الحزم المفقودة أو التحقق منها
+                    sh 'go mod tidy'
+                    // تنفيذ اختبارات الوحدة
                     sh 'go test ./...'
                 }
             }
