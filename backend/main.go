@@ -36,3 +36,6 @@ func main() {
 		log.Fatal(err)
 	}
 }
+func HelloWorld() string {
+	return "Hello, World!"
+}
