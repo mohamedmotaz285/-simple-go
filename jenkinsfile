@@ -21,14 +21,6 @@ pipeline {
             }
         }
 
-        stage('Set Go Path') {
-            steps {
-                script {
-                    sh 'export PATH=$PATH:/usr/local/go/bin'
-                }
-            }
-        }
-
         stage('Run Unit Tests') {
             steps {
                 script {
@@ -54,15 +46,13 @@ pipeline {
         success {
             mail to: 'mohamedmotaz221@gmail.com',
                  subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The Jenkins pipeline has completed successfully. Check it here: ${env.BUILD_URL}",
-                 mimeType: 'text/html',
+                 body: "The Jenkins pipeline has completed successfully.\nCheck it here: ${env.BUILD_URL}",
                  from: "jenkins@yourcompany.com"
         }
         failure {
             mail to: 'mohamedmotaz221@gmail.com',
                  subject: "Jenkins Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The Jenkins pipeline has failed. Check it here: ${env.BUILD_URL}",
-                 mimeType: 'text/html',
+                 body: "The Jenkins pipeline has failed.\nCheck it here: ${env.BUILD_URL}",
                  from: "jenkins@yourcompany.com"
         }
     }
