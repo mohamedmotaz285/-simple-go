@@ -7,11 +7,10 @@ pipeline {
     }
 
     stages {
-        stage('Install Go') {
+        stage('Check Go Installation') {
             steps {
                 script {
-                    // تثبيت Go إذا كان غير موجود
-                    sh 'if ! command -v go &> /dev/null; then sudo apt-get update && sudo apt-get install -y golang-go; fi'
+                    sh 'command -v go || { echo "Go is not installed"; exit 1; }'
                 }
             }
         }
@@ -25,7 +24,6 @@ pipeline {
         stage('Set Go Path') {
             steps {
                 script {
-                    // تأكد من أن Go موجود في PATH
                     sh 'export PATH=$PATH:/usr/local/go/bin'
                 }
             }
@@ -34,9 +32,7 @@ pipeline {
         stage('Run Unit Tests') {
             steps {
                 script {
-                    // قم بتثبيت الحزم المفقودة أو التحقق منها
                     sh 'go mod tidy'
-                    // تنفيذ اختبارات الوحدة
                     sh 'go test ./...'
                 }
             }
@@ -58,12 +54,16 @@ pipeline {
         success {
             mail to: 'mohamedmotaz221@gmail.com',
                  subject: "Jenkins Pipeline Success: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The Jenkins pipeline has completed successfully. Check it here: ${env.BUILD_URL}"
+                 body: "The Jenkins pipeline has completed successfully. Check it here: ${env.BUILD_URL}",
+                 mimeType: 'text/html',
+                 from: "jenkins@yourcompany.com"
         }
         failure {
             mail to: 'mohamedmotaz221@gmail.com',
                  subject: "Jenkins Pipeline Failed: ${env.JOB_NAME} #${env.BUILD_NUMBER}",
-                 body: "The Jenkins pipeline has failed. Check it here: ${env.BUILD_URL}"
+                 body: "The Jenkins pipeline has failed. Check it here: ${env.BUILD_URL}",
+                 mimeType: 'text/html',
+                 from: "jenkins@yourcompany.com"
         }
     }
 }
